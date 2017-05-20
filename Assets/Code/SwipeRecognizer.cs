@@ -16,11 +16,35 @@ public class SwipeRecognizer : MonoBehaviour
 
 	void Update ()
 	{
+		#if UNITY_EDITOR
+		if (Input.GetMouseButtonDown (0)) {
+			startPosition = Camera.main.ScreenToViewportPoint (Input.mousePosition).x;
+			dragging = true;
+			swipeDirection = SwipeDirection.Stationary;
+		}
+
+		if (dragging) {
+			float actualPosition = Camera.main.ScreenToViewportPoint (Input.mousePosition).x;
+			SwipeDirection direction = SwipeDirection.Left;
+			if (actualPosition >= startPosition)
+				direction =	SwipeDirection.Right;
+
+			if (swipeDirection != SwipeDirection.Stationary && swipeDirection != direction)
+				startPosition = actualPosition;
+
+			OnSwipe (direction, Mathf.Abs (startPosition - actualPosition));
+			swipeDirection = direction;
+		}
+
+		if (Input.GetMouseButtonUp (0)) {
+			dragging = false;
+			OnFingerUp ();
+		}
+		#else
 		if (Input.touchCount == 0)
 			return;
 		
 		Touch touch = Input.GetTouch (0);
-		Debug.Log (touch.phase.ToString ());
 		if (touch.phase == TouchPhase.Began) {
 			startPosition = Camera.main.ScreenToViewportPoint (touch.position).x;
 			dragging = true;
@@ -44,5 +68,6 @@ public class SwipeRecognizer : MonoBehaviour
 			dragging = false;
 			OnFingerUp ();
 		}
+		#endif
 	}
 }
