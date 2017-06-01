@@ -20,4 +20,25 @@ public static class ExtensionMethods
 		if (action != null)
 			action ();
 	}
+
+	public static void Animate (this MonoBehaviour monoBehaviour, float animationTime, System.Action<float> animationAction, System.Action actionPost = null, System.Action actionPre = null,  float delay = 0f)
+	{
+		monoBehaviour.StartCoroutine (AnimateCoroutine(animationTime, delay, animationAction, actionPost, actionPre));
+	}
+
+	static IEnumerator AnimateCoroutine (float animationTime, float delay, System.Action<float> animationAction, System.Action actionPost = null, System.Action actionPre = null)
+	{
+		yield return new WaitForSeconds (delay);
+		actionPre.SafeInvoke ();
+		float elapsedTime = 0f;
+		while (elapsedTime <= animationTime)
+		{
+			animationAction (elapsedTime/animationTime);
+			yield return null;
+			elapsedTime += Time.deltaTime;
+		}
+
+		Debug.Log ("Anim finished: " + elapsedTime);
+		actionPost.SafeInvoke ();
+	}
 }
